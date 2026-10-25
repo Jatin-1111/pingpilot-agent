@@ -1,0 +1,9 @@
+.git
+.github
+dist
+*.md
+*.exe
+token
+*.token
+agent.json
+.env

@@ -1,0 +1,6 @@
+# Scripts run on Linux: a Windows checkout must not turn their line endings into CRLF, which breaks `sh`
+*.sh text eol=lf
+install.sh text eol=lf
+*.service text eol=lf
+Dockerfile text eol=lf
+*.go text eol=lf

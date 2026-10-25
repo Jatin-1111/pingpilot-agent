@@ -1,0 +1,10 @@
+# build output
+/pingpilot-agent
+/pingpilot-agent.exe
+/dist/
+
+# a token must never be committed
+token
+*.token
+agent.json
+.env

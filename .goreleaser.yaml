@@ -1,0 +1,49 @@
+# Releases: push a tag like v0.1.0 and .github/workflows/release.yml builds every platform, writes checksums.txt and
+# publishes them, with install.sh, to the GitHub release.
+#
+# Assets have no version in their names (pingpilot-agent_linux_amd64): that is what lets the installer use
+#   https://github.com/<repo>/releases/latest/download/<asset>
+# for "the newest" with no API call (the GitHub API is rate limited per address, a download address is not).
+version: 2
+
+project_name: pingpilot-agent
+
+before:
+  hooks:
+    - go mod tidy
+    - go vet ./...
+
+builds:
+  - id: agent
+    main: ./cmd/pingpilot-agent
+    binary: pingpilot-agent
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64, arm]
+    goarm: ["7"]
+    ignore:
+      - { goos: darwin, goarch: arm }
+      - { goos: windows, goarch: arm }
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+# the binaries themselves, not archives: one download, nothing to unpack, and the installer verifies exactly that file
+archives:
+  - id: binaries
+    formats: [binary]
+    name_template: "pingpilot-agent_{{ .Os }}_{{ .Arch }}{{ if eq .Os \"windows\" }}.exe{{ end }}"
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+  extra_files:
+    - glob: ./install.sh
+
+release:
+  extra_files:
+    - glob: ./install.sh
+
+changelog:
+  disable: true

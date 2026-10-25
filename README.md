@@ -112,13 +112,18 @@ The format of what is sent is defined by the API (`utils/hostMetrics.js` in the 
 
 ## Releases
 
-Push a tag and the release builds itself:
+Releases are made from a developer's machine, with no CI needed:
 
 ```
-git tag v0.1.0 && git push origin v0.1.0
+sh scripts/release.sh v0.1.1 --dry-run   # test, build every platform, checksum, verify; publish nothing
+sh scripts/release.sh v0.1.1             # the same, then publish the GitHub release (and its tag)
 ```
 
-`.github/workflows/release.yml` builds every platform with GoReleaser, publishes the binaries, `checksums.txt` and `install.sh` to the GitHub release (the binaries carry no version in their names, so `releases/latest/download/<name>` always means "the newest"), signs their build provenance (`gh attestation verify <file> --repo Jatin-1111/pingpilot-agent`), and pushes the container image to `ghcr.io/jatin-1111/pingpilot-agent` for amd64 and arm64.
+It refuses to publish unless the tree is clean and on `main`, `origin/main` is the same commit, the tests pass, every checksum verifies and the version is new. It publishes the binaries (named `pingpilot-agent_<os>_<arch>`, with no version, so `releases/latest/download/<name>` always means "the newest"), `checksums.txt` and `install.sh`. Needs `go`, `sha256sum`, `git` and the GitHub CLI signed in (`gh auth status`).
+
+After a release, run the real installer against it in a clean container to see it work: `curl -fsSL https://github.com/Jatin-1111/pingpilot-agent/releases/latest/download/install.sh | PINGPILOT_TOKEN=<any well-formed token> sh -s -- --no-start`.
+
+`.github/workflows/` holds the same thing for GitHub's machines (tests on three operating systems, a cross-build, the installer test, GoReleaser, build provenance, and the container image pushed to ghcr). Both are manual-only (`workflow_dispatch`); put `push` or `tags` back under `on:` to run them automatically. The container image is only published by that workflow (or by `docker buildx build --push` with `docker login ghcr.io`); the Linux installer does not need it.
 
 `install.sh` is also kept in the Ping Pilott backend (`assets/install.sh`), which serves it at `/install.sh`. When it changes here, copy it there; the backend's tests compare the two when both repositories are checked out side by side.
 

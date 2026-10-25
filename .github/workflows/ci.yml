@@ -1,9 +1,9 @@
 name: ci
 
+# Manual only (Actions tab > ci > Run workflow). Pushes do not trigger it: releases are made by scripts/release.sh, and the
+# same checks run there. Put `push` and `pull_request` back under `on:` to run it on every change.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

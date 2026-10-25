@@ -1,9 +1,11 @@
 name: release
 
-# Push a tag such as v0.1.0 to publish: binaries for every platform, checksums.txt, install.sh, and the container image.
+# An alternative to scripts/release.sh: publishes binaries for every platform, checksums.txt, install.sh and the container
+# image from GitHub's machines. Run it by hand (Actions tab > release > Run workflow, on a tag), or put
+#   push: { tags: ["v*"] }
+# back under `on:` to run it whenever a tag is pushed. Do not use both for the same version.
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   binaries:
